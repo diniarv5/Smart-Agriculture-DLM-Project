@@ -2,7 +2,7 @@
 **Tugas 2: Data Lifecycle Management**
 **Nama:Fivediniar Edra Primaulidina**
 **NPM : 23082010046**
-**Deadline:** 11 Maret 2026**
+**Deadline: 11 Maret 2026**
 
 ## 📋 Deskripsi Proyek
 Proyek ini bertujuan untuk membangun dashboard monitoring pertanian cerdas () menggunakan dataset sensor IoT. Implementasi ini mengikuti 6 tahapan **Data Lifecycle Management (DLM)** untuk mendukung digitalisasi desa (Smart Village).
