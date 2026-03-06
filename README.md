@@ -50,11 +50,14 @@ Berdasarkan evaluasi, kualitas data proyek ini adalah sebagai berikut:
 
 ## 📂 Struktur Repositori
 ```text
+├── dashboard/
+│   └── streamlit_app.py                           # Kode utama Dashboard Streamlit
 ├── data/
-│   ├── raw/               # Dataset asli dari Kaggle
-│   └── processed/         # Dataset hasil pembersihan
-├── notebook/
-│   └── analysis.ipynb     # Proses cleaning & EDA di Colab
-├── screenshots/           # Bukti pengerjaan (Heatmap & Dashboard)
-├── app.py                 # Kode utama Dashboard Streamlit
-└── README.md              # Dokumentasi proyek
+│   ├── raw/                                       # Dataset asli dari Kaggle
+│       └── Smart_Agriculture_Dataset_Data.csv     # Dataset asli dari Kaggle 
+├── outputs/                                       # Bukti pengerjaan (Heatmap & Dashboard)
+│   ├── cleaned_data.csv                           # Dataset yang sudah clean
+│   ├── analysis report.pdf                        # Laporan analisis
+│   └── screenshot_dasnoard.png                    # Gambar dashboard dari Streamlit
+├── Data_Lifecycle_Smart_Farming.ipynb
+└── README.md                                      # Dokumentasi proyek
