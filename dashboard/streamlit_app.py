@@ -5,53 +5,85 @@ import plotly.express as px
 # 1. Konfigurasi Halaman
 st.set_page_config(page_title="Smart Farming Dashboard", layout="wide")
 
-# 2. Judul Utama
+# 2. Judul Utama & Deskripsi
 st.title("🌾 Smart Farming Dashboard - Smart Village")
-st.markdown("### 📊 Project: **Smart Agriculture Dataset**")
+st.markdown("""
+    ### 📊 Project: **Smart Agriculture Dataset**
+    Dashboard ini dirancang untuk memantau kondisi lahan pertanian secara real-time. 
+    Melalui pendekatan **Data Lifecycle Management (DLM)**, data sensor diolah untuk memberikan 
+    wawasan bagi petani dalam menjaga kesehatan tanaman dan efisiensi sumber daya.
+""")
 
 # 3. Load data dari folder outputs
 try:
     df = pd.read_csv('outputs/cleaned_data.csv')
     
-    # --- BAGIAN BARU: KEY METRICS (Agar tidak polos) ---
-    # Menampilkan ringkasan data di bagian atas
+    # --- BAGIAN METRICS ---
     st.write("---")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Rata-rata Kelembaban (MOI)", f"{df['MOI'].mean():.2f}")
+        st.metric("Rata-rata Kelembaban", f"{df['MOI'].mean():.2f}", delta_color="normal")
     with col2:
         st.metric("Suhu Maksimum", f"{df['temp'].max():.2f}°C")
     with col3:
-        st.metric("Total Records", len(df))
+        st.metric("Kelembaban Udara (Avg)", f"{df['humidity'].mean():.1f}%")
+    with col4:
+        st.metric("Total Data Sensor", len(df))
     st.write("---")
 
     # --- BAGIAN ALERT (Sistem Peringatan) ---
     latest_moi = df['MOI'].iloc[-1]
     if latest_moi < 30:
-        st.error(f"⚠️ **Peringatan Irigasi:** Kelembaban tanah rendah ({latest_moi}). Segera nyalakan pompa!")
+        st.error(f"⚠️ **Peringatan Irigasi:** Tingkat kelembaban tanah saat ini rendah ({latest_moi}). Sistem menyarankan aktivasi pompa air.")
     else:
-        st.success(f"✅ **Kondisi Aman:** Kelembaban tanah optimal ({latest_moi}).")
+        st.success(f"✅ **Kondisi Tanah Optimal:** Kelembaban tanah mencukupi ({latest_moi}). Tidak diperlukan irigasi tambahan.")
 
-    # --- BAGIAN VISUALISASI (Versi Kamu yang Dimodifikasi) ---
-    st.subheader("Monitoring Tren Sensor IoT")
+    # --- BAGIAN VISUALISASI ---
+    st.markdown("## 📈 Analisis Tren Sensor")
     
-    # Menaruh selectbox di dalam kolom agar lebih rapi
     c1, c2 = st.columns([1, 3])
     with c1:
-        sensor_choice = st.selectbox("Pilih Sensor untuk Grafik:", ["temp", "humidity", "MOI", "result"])
+        st.write("### Pengaturan")
+        sensor_choice = st.selectbox("Pilih Parameter Sensor:", ["temp", "humidity", "MOI", "result"])
+        
+        # Penjelasan dinamis berdasarkan pilihan sensor
+        descriptions = {
+            "temp": "Suhu tanah/lingkungan mempengaruhi laju transpirasi tanaman.",
+            "humidity": "Kelembaban udara tinggi dapat memicu munculnya hama/jamur.",
+            "MOI": "Indikator utama kecukupan air dalam tanah untuk akar tanaman.",
+            "result": "Klasifikasi status akhir berdasarkan penggabungan seluruh sensor."
+        }
+        st.info(f"**Info Sensor:** {descriptions[sensor_choice]}")
     
-    # Grafik Plotly (Otomatis menyesuaikan tema Terang/Gelap Streamlit)
-    fig = px.line(df.head(100), 
-                 y=sensor_choice, 
-                 title=f"Grafik Tren Real-time: {sensor_choice}",
-                 markers=True,
-                 template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white")
+    with c2:
+        # Warna garis berbeda tiap sensor agar lebih berwarna
+        colors = {"temp": "#FF4B4B", "humidity": "#1C83E1", "MOI": "#00C781", "result": "#FFD700"}
+        
+        fig = px.line(df.head(100), 
+                     y=sensor_choice, 
+                     title=f"Grafik Tren: {sensor_choice.upper()}",
+                     markers=True,
+                     template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white")
+        
+        fig.update_traces(line_color=colors[sensor_choice], line_width=3)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # --- BAGIAN KESIMPULAN OTOMATIS ---
+    st.markdown("### 📝 Kesimpulan Analisis")
     
-    fig.update_traces(line_color='#2ecc71') # Warna hijau khas pertanian
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.success("🚀 Data berhasil dimuat dari pipeline DLM!")
+    # Logika sederhana untuk kesimpulan berdasarkan sensor yang dipilih
+    if sensor_choice == "MOI":
+        avg_moi = df['MOI'].head(100).mean()
+        st.write(f"Berdasarkan grafik, rata-rata kelembaban tanah berada di angka **{avg_moi:.2f}**. Tren ini menunjukkan bahwa pola pengairan sudah cukup stabil namun perlu diawasi saat menyentuh titik terendah.")
+    elif sensor_choice == "temp":
+        max_t = df['temp'].head(100).max()
+        st.write(f"Suhu tertinggi yang tercatat adalah **{max_t}°C**. Petani disarankan melakukan pemantauan ekstra pada jam-jam dengan suhu ekstrem untuk mencegah tanaman layu.")
+    else:
+        st.write(f"Data **{sensor_choice}** saat ini menunjukkan fluktuasi normal. Tidak ditemukan anomali data yang signifikan dalam 100 rekaman terakhir.")
+
+    st.divider()
+    st.caption("🚀 Data Lifecycle Management Pipeline | Smart Village Project 2026")
 
 except Exception as e:
-    st.error("❌ File 'outputs/cleaned_data.csv' belum ditemukan atau terjadi error.")
-    st.info("Pastikan kamu sudah menjalankan notebook di Colab dan mengupload file .csv ke folder 'outputs' di GitHub.")
+    st.error(f"❌ Terjadi kesalahan: {e}")
+    st.info("Pastikan file 'outputs/cleaned_data.csv' sudah ada di repositori GitHub kamu.")
